@@ -4,5 +4,6 @@ dist/
 .env
 .vercel/
 *.log
+public/ort/
 
 # .
