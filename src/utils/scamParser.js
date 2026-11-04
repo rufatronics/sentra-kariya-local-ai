@@ -1,6 +1,6 @@
 // src/utils/scamParser.js
 // Extract URLs and structural metadata from a text message.
-// All judgment, classification, and reasoning is left to Gemma 4.
+// All judgment, classification, and reasoning is left to the local model.
 
 export function extractScamFeatures(text) {
   const normalizedText = text || '';

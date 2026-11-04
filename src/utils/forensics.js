@@ -1,6 +1,6 @@
 // src/utils/forensics.js
 // Pure signal extraction utilities for document verification.
-// All judgment, classification, and reasoning is left to Gemma 4.
+// All judgment, classification, and reasoning is left to the local model.
 
 import FFT from 'fft.js';
 

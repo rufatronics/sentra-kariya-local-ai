@@ -14,7 +14,8 @@ import { ScamCheckView } from './components/ScamCheckView'
 import { InstallPrompt } from './components/InstallPrompt'
 
 import { LANGUAGES, TRANSLATIONS } from './utils/translations'
-import { subscribeStatus, checkWebGPU } from './hooks/useLocalAI'
+import { subscribeStatus } from './hooks/useLocalAI'
+import { SetupScreen } from './components/SetupScreen'
 
 function badgeState(s) {
   if (s.llm === 'loading' || s.nllb === 'loading') return ['loading model…', true]
@@ -24,23 +25,15 @@ function badgeState(s) {
   return ['local AI · on demand', false]
 }
 
-function ProviderBadge() {
+function ProviderBadge({ onClick }) {
   const [s, setS] = useState({ llm: 'idle', nllb: 'idle', progress: '', gpu: null })
-  useEffect(() => {
-    const off = subscribeStatus(setS)
-    checkWebGPU()
-    return off
-  }, [])
+  useEffect(() => subscribeStatus(setS), [])
   const [label, warn] = badgeState(s)
   return (
-    <div className="ml-auto flex flex-col items-end" title={s.gpu && !s.gpu.ok ? s.gpu.reason : s.progress}>
-      <div className="flex items-center gap-1.5">
-        <span className={`w-1.5 h-1.5 rounded-full animate-pulse-slow ${warn ? 'bg-amber' : 'bg-teal'}`} aria-hidden="true"/>
-        <span className={`text-xs font-mono ${warn ? 'text-amber' : 'text-teal'}`}>{label}</span>
-      </div>
-      {s.gpu && !s.gpu.ok && <span className="text-[10px] text-white/40 max-w-[11rem] text-right leading-tight">{s.gpu.reason}</span>}
-      {(s.llm === 'loading' || s.nllb === 'loading') && s.progress && <span className="text-[10px] text-white/40 max-w-[11rem] text-right leading-tight truncate">{s.progress}</span>}
-    </div>
+    <button type="button" onClick={onClick} className="ml-auto flex items-center gap-1.5" title="AI model settings">
+      <span className={`w-1.5 h-1.5 rounded-full animate-pulse-slow ${warn ? 'bg-amber' : 'bg-teal'}`} aria-hidden="true"/>
+      <span className={`text-xs font-mono ${warn ? 'text-amber' : 'text-teal'}`}>{label}</span>
+    </button>
   )
 }
 
@@ -49,6 +42,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('form')
   // Track LLM fallback status
   const [, setProvider]   = useState(null)
+  const [ready, setReady]   = useState(false)
+  const [manage, setManage] = useState(false)
   // DEFAULT LANGUAGE: Hausa ('ha')
   const [lang, setLang]           = useState('ha')
 
@@ -62,6 +57,9 @@ export default function App() {
     { id: 'verify',  label: t.verify,  icon: '🛡️', shortLabel: t.verify.split(' ')[0] },
     { id: 'scam',    label: t.scam,    icon: '🎯', shortLabel: t.scam.split(' ')[0] }
   ];
+
+  if (!ready) return <SetupScreen onDone={() => setReady(true)} />
+  if (manage) return <SetupScreen manage onDone={() => setManage(false)} />
 
   return (
     <div className="min-h-dvh flex flex-col max-w-lg mx-auto relative bg-ink">
@@ -81,7 +79,7 @@ export default function App() {
           <h1 className="font-display font-black text-paper text-lg leading-tight">Kariya</h1>
           <p className="text-white/30 text-xs leading-tight">{t.subTitle}</p>
         </div>
-        <ProviderBadge />
+        <ProviderBadge onClick={() => setManage(true)} />
 
         {/* Multilingual Selector dropdown */}
         <div className="flex items-center gap-1.5 ml-2">

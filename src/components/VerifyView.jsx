@@ -2,7 +2,7 @@
 // React component implementing document verification forensics for low-literacy users.
 // Analyzes certificates, ID cards, and school letters to determine digital alterations or AI generation.
 // It integrates client-side image signal extractors (ELA, FFT, Noise Consistency, OpenCV line detection)
-// and leverages Gemma 4 to produce clean summaries translated into Hausa, English, or Pidgin.
+// and leverages the local model to produce clean summaries translated into Hausa, English, or Pidgin.
 
 import { TRANSLATIONS } from '../utils/translations'
 import { useState, useCallback, useRef } from 'react'
@@ -50,7 +50,7 @@ export function VerifyView({ lang = 'ha' }) {
    * Executes the pipeline:
    * 1. Renders selected image onto a hidden canvas.
    * 2. Runs classical image metrics client-side (ELA, FFT, local variance, text alignments).
-   * 3. Queries Gemma 4 via system and user prompts passing raw metrics.
+   * 3. Queries the local model via system and user prompts passing raw metrics.
    * 4. Converts the response JSON to a user-friendly report and reads out the summary aloud.
    */
   const runAnalysis = useCallback(async () => {
@@ -103,7 +103,7 @@ export function VerifyView({ lang = 'ha' }) {
 
       setForensicSignals(signals)
 
-      // 3. Request LLM Report from Gemma 4
+      // 3. Request LLM Report from the local model
       setLoadingMsg(t.verifyProcessingDesc)
       const reportResponse = await makeReport({ signals, call, translate, lang })
 

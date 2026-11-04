@@ -1,6 +1,6 @@
 // ScamCheckView.jsx
 // React component supporting scam and SMS fraud checks tailored for Nigerian phone and job scam contexts.
-// Parses pasted/spoken SMS messages, parses URLs and domain risk metrics, and uses Gemma 4
+// Parses pasted/spoken SMS messages, parses URLs and domain risk metrics, and uses the local model
 // to output a structured safety report available in Hausa, English, or Pidgin English.
 
 import { TRANSLATIONS } from '../utils/translations'
@@ -26,7 +26,7 @@ export function ScamCheckView({ lang = 'ha' }) {
   /**
    * Runs the scam check pipeline:
    * 1. Extracts linguistic metadata and URLs from user's text message.
-   * 2. Packages payload and queries Gemma 4.
+   * 2. Packages payload and queries the local model.
    * 3. Renders result risk card and reads aloud plain-language summary via TTS.
    */
   const runAnalysis = useCallback(async () => {
@@ -37,7 +37,7 @@ export function ScamCheckView({ lang = 'ha' }) {
       // 1. Run local feature/link extractor
       const scamPayload = extractScamFeatures(inputText)
 
-      // 2. Formulate dynamic localized prompt and query Gemma 4
+      // 2. Formulate dynamic localized prompt and query the local model
       const prompt = buildScamCheckPrompt(scamPayload, lang)
       const reportResponse = await callJSON({
         systemPrompt: prompt.systemPrompt,

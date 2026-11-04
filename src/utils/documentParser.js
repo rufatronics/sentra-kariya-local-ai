@@ -1,6 +1,6 @@
 // documentParser.js
-// Strategy: for images → pass directly to Gemma 4 vision (no OCR overhead)
-// For PDFs → extract text with pdf.js, fall back to Gemma 4 vision if scan
+// Strategy: for images → pass directly to the local model (no OCR overhead)
+// For PDFs → extract text with pdf.js, fall back to the local model if scan
 
 export async function extractTextFromFile(file) {
   const type = file.type
@@ -17,7 +17,7 @@ export async function extractTextFromFile(file) {
       if (text && text.trim().length > 50) {
         return { mode: 'text', text, base64: null }
       }
-      // Scanned PDF — render first page as image and pass to Gemma 4 vision
+      // Scanned PDF — render first page as image and pass to the local model
       const { base64, mimeType } = await pdfToImage(file)
       return { mode: 'image', base64, mimeType, text: null }
     } catch {

@@ -1,4 +1,4 @@
-// prompts.js — All Gemma 4 prompt templates
+// prompts.js — All the local model prompt templates
 
 export const SYSTEM_PROMPTS = {
   formHelper: `You are ClearForm, a friendly form assistant. 
@@ -143,7 +143,7 @@ export function buildVerifyPrompt(forensicsData, lang = 'en') {
   const instruction = langInstructions[lang] || langInstructions.en;
 
   return {
-    systemPrompt: `You are ClearForm, a document verification expert powered by Gemma 4.
+    systemPrompt: `You are ClearForm, a document verification expert powered by the local model.
 Analyze the provided JSON forensic signals to evaluate if a document is genuine, edited, AI-generated, a repeatedly saved copy, or fabricated.
 
 CRITICAL RULES:
@@ -209,7 +209,7 @@ export function buildScamCheckPrompt(scamPayload, lang = 'en') {
   const instruction = langInstructions[lang] || langInstructions.en;
 
   return {
-    systemPrompt: `You are ClearForm, a friendly assistant specialized in checking messages for potential scams, powered by Gemma 4.
+    systemPrompt: `You are ClearForm, a friendly assistant specialized in checking messages for potential scams, powered by the local model.
 Analyze the provided text and URL features to evaluate risk levels.
 
 CRITICAL RULES:

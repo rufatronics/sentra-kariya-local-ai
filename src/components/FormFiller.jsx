@@ -97,7 +97,7 @@ export function FormFiller({ onProviderChange, lang = 'ha' }) {
   // Sync state changes in API provider to App components
   useEffect(() => { onProviderChange?.(provider) }, [provider, onProviderChange])
 
-  // Fetches localized questions step-by-step from Gemma 4 model or defaults back to clear localized placeholders
+  // Fetches localized questions step-by-step from the local model model or defaults back to clear localized placeholders
   const askQuestion = useCallback(async (index, fs, ans) => {
     const field = fs[index]
     if (!field) return

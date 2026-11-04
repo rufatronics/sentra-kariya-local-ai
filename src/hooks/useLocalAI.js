@@ -7,7 +7,16 @@ const CODES = { en: 'eng_Latn', ha: 'hau_Latn', yo: 'yor_Latn', ig: 'ibo_Latn' }
 let enginePromise = null
 let translatorPromise = null
 const listeners = new Set()
-const status = { llm: 'idle', nllb: 'idle', progress: '', gpu: null }
+const status = { llm: 'idle', nllb: 'idle', progress: '', gpu: null, llmPct: 0, nllbPct: 0 }
+const KEY = 'sentra_setup'
+const allowed = { llm: false, nllb: false }
+export const getSetup = () => { try { return JSON.parse(localStorage.getItem(KEY)) } catch { return null } }
+export function saveSetup(v) {
+  try { localStorage.setItem(KEY, JSON.stringify({ done: true, llm: !!v.llm, nllb: !!v.nllb })) } catch {}
+  allowed.llm = !!v.llm; allowed.nllb = !!v.nllb
+}
+const saved = getSetup()
+if (saved) { allowed.llm = !!saved.llm; allowed.nllb = !!saved.nllb }
 const emit = () => listeners.forEach(f => f({ ...status }))
 
 export function subscribeStatus(fn) {
@@ -30,6 +39,7 @@ export async function checkWebGPU() {
 }
 
 export function loadLLM() {
+  if (!allowed.llm) return Promise.reject(new Error('Local AI model is not installed'))
   if (!enginePromise) {
     enginePromise = (async () => {
       const g = await checkWebGPU()
@@ -37,9 +47,9 @@ export function loadLLM() {
       status.llm = 'loading'; emit()
       const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
       const engine = await CreateMLCEngine(LLM_ID, {
-        initProgressCallback: r => { status.progress = r.text; emit() }
+        initProgressCallback: r => { status.progress = r.text; status.llmPct = Math.round((r.progress || 0) * 100); emit() }
       })
-      status.llm = 'ready'; emit()
+      status.llm = 'ready'; status.llmPct = 100; emit()
       return engine
     })().catch(e => {
       enginePromise = null
@@ -52,25 +62,26 @@ export function loadLLM() {
 }
 
 export function loadTranslator() {
+  if (!allowed.nllb) return Promise.reject(new Error('Translation model is not installed'))
   if (!translatorPromise) {
     status.nllb = 'loading'; emit()
     translatorPromise = (async () => {
       const { pipeline, env } = await import('@huggingface/transformers')
       env.allowLocalModels = false
       env.backends.onnx.wasm.wasmPaths = '/ort/'
-      const last = {}
+      const files = {}
       return pipeline('translation', NLLB_ID, {
         dtype: 'q8',
         device: 'wasm',
         progress_callback: p => {
-          if (!p.file) return
-          const n = Math.floor(p.progress || 0)
-          if (last[p.file] === n) return
-          last[p.file] = n
-          status.progress = `Downloading translation model: ${n}%`; emit()
+          if (!p.file || !p.total) return
+          files[p.file] = { l: p.loaded || 0, t: p.total }
+          const L = Object.values(files).reduce((x, f) => x + f.l, 0)
+          const T = Object.values(files).reduce((x, f) => x + f.t, 0)
+          status.nllbPct = Math.min(100, Math.round((L / T) * 100)); status.progress = `Downloading translation model: ${status.nllbPct}%`; emit()
         }
       })
-    })().then(t => { status.nllb = 'ready'; emit(); return t })
+    })().then(t => { status.nllb = 'ready'; status.nllbPct = 100; emit(); return t })
       .catch(e => { translatorPromise = null; status.nllb = 'error'; emit(); throw e })
   }
   return translatorPromise
