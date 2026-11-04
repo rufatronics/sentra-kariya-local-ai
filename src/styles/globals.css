@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ink: #0d1117;
+    --paper: #f5f0e8;
+    --amber: #f59e0b;
+    --teal: #0d9488;
+    --radius: 16px;
+  }
+
+  html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink text-paper font-body antialiased;
+    min-height: 100dvh;
+  }
+
+  /* Respect user font size preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  /* High contrast mode */
+  @media (forced-colors: active) {
+    button { border: 2px solid ButtonText; }
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm;
+  }
+
+  .btn-primary {
+    @apply bg-amber text-ink font-display font-bold px-6 py-3 rounded-xl
+           hover:bg-amber-light transition-all duration-200 focus-visible:ring-4
+           focus-visible:ring-amber/50 focus-visible:outline-none
+           active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-white/10 text-paper font-body px-6 py-3 rounded-xl border border-white/20
+           hover:bg-white/20 transition-all duration-200 focus-visible:ring-4
+           focus-visible:ring-white/30 focus-visible:outline-none active:scale-95;
+  }
+
+  .input-field {
+    @apply w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3
+           text-paper placeholder-white/30 font-body
+           focus:outline-none focus:border-amber/60 focus:bg-white/10
+           transition-all duration-200;
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Mic recording pulse */
+  .mic-active {
+    box-shadow: 0 0 0 0 rgba(245,158,11,0.7);
+    animation: mic-pulse 1.5s ease-out infinite;
+  }
+
+  @keyframes mic-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(245,158,11,0.7); }
+    70%  { box-shadow: 0 0 0 20px rgba(245,158,11,0); }
+    100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+  }
+
+  /* Dot typing indicator */
+  .typing-dot {
+    @apply w-2 h-2 rounded-full bg-amber inline-block mx-0.5;
+    animation: bounce-dot 1.4s infinite ease-in-out;
+  }
+  .typing-dot:nth-child(1) { animation-delay: 0s; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce-dot {
+    0%, 60%, 100% { transform: translateY(0); }
+    30%            { transform: translateY(-8px); }
+  }
+
+  /* Focus ring for keyboard users */
+  *:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+/* . */

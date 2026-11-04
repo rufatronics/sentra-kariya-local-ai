@@ -1,0 +1,31 @@
+<!doctype html><meta charset="utf-8"><title>Sentra model test</title>
+<body style="font-family:sans-serif;max-width:640px;margin:2rem auto;padding:0 1rem">
+<h3>Sentra: browser model test (needs internet for first load)</h3>
+<button id="a">1. Test Llama 3.2 1B</button> <button id="b">2. Test NLLB</button>
+<pre id="o" style="white-space:pre-wrap"></pre>
+<script type="module">
+const o = document.getElementById('o'), log = m => o.textContent += m + '\n'
+log('WebGPU: ' + (navigator.gpu ? 'yes' : 'NO'))
+document.getElementById('a').onclick = async () => {
+  try {
+    const { CreateMLCEngine } = await import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm')
+    let t = performance.now()
+    const e = await CreateMLCEngine('Llama-3.2-1B-Instruct-q4f16_1-MLC', { initProgressCallback: r => log(r.text) })
+    log('load s: ' + ((performance.now() - t) / 1000).toFixed(1)); t = performance.now()
+    const r = await e.chat.completions.create({ messages: [{ role: 'user', content: 'Is this SMS a scam? Answer SCAM or SAFE: "You won 5,000,000 naira. Send your BVN to claim."' }], max_tokens: 20 })
+    log(r.choices[0].message.content + ' | answer s: ' + ((performance.now() - t) / 1000).toFixed(1))
+  } catch (x) { log('ERROR: ' + x.message) }
+}
+document.getElementById('b').onclick = async () => {
+  try {
+    const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1')
+    let t = performance.now()
+    const p = await pipeline('translation', 'Xenova/nllb-200-distilled-600M', { dtype: 'q8', progress_callback: x => x.file && log(x.file + ' ' + Math.round(x.progress || 0) + '%') })
+    log('load s: ' + ((performance.now() - t) / 1000).toFixed(1))
+    const h = 'An ci nasarar kyautar naira miliyan biyar. Aiko lambar BVN dinka domin karba.'
+    const en = (await p(h, { src_lang: 'hau_Latn', tgt_lang: 'eng_Latn' }))[0].translation_text
+    const back = (await p(en, { src_lang: 'eng_Latn', tgt_lang: 'hau_Latn' }))[0].translation_text
+    log('HA->EN: ' + en); log('EN->HA: ' + back)
+  } catch (x) { log('ERROR: ' + x.message) }
+}
+</script>
